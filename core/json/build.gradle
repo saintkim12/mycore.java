@@ -51,6 +51,13 @@ dependencies {
   /* lombok */  
   compileOnly 'org.projectlombok:lombok'
   annotationProcessor 'org.projectlombok:lombok'
+
+  // https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
+  implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+
+  // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+  implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.31'
+
 }
 
 sourceCompatibility = 1.8

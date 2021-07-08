@@ -8,4 +8,5 @@
  */
 
 rootProject.name = 'mycore.java'
-include('lib')
+include ':lib'
+include ':core:json'
