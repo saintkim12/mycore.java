@@ -14,9 +14,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -79,7 +78,7 @@ public class JSONMap extends LinkedHashMap<String, Object> {
   /* default method */
   public String toString() {
     try {
-      return new JSONObject(this).toJSONString();
+      return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
     } catch (Exception e) {
       return super.toString();
     }
@@ -92,6 +91,7 @@ public class JSONMap extends LinkedHashMap<String, Object> {
    * @param key
    * @return casted value
    **/
+  @SuppressWarnings("unchecked")
   public <T> T castGet(Object key) {
     Object value = this.get(key);
     return (T) value;
@@ -104,6 +104,7 @@ public class JSONMap extends LinkedHashMap<String, Object> {
    * @param key
    * @return casted value or default value
    **/
+  @SuppressWarnings("unchecked")
   public <T> T castGet(Object key, T defaultValue) {
     Object value = this.getOrDefault(key, defaultValue);
     return (T) value;
@@ -133,8 +134,10 @@ public class JSONMap extends LinkedHashMap<String, Object> {
 
   public static JSONMap fromJsonString(String jsonString) {
     try {
-      return JSONMap.from(new JSONParser().parse(jsonString));
-    } catch (ParseException e) {
+      // return new ObjectMapper().readValue(jsonString, JSONMap.class);
+      return JSONMap.from(new ObjectMapper().readValue(jsonString, LinkedHashMap.class));
+      // return JSONMap.from(new JSONParser().parse(jsonString));
+    } catch (JsonProcessingException e) {
       log.error("Parsing error with {}", jsonString, e);
       return new JSONMap();
     }

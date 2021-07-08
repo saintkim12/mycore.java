@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.json.simple.JSONArray;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -42,7 +42,8 @@ public class JSONList extends LinkedList<Object> {
   /* default method */
   public String toString() {
     try {
-      return Optional.of(new JSONArray()).map(l -> { l.addAll(this); return l; }).orElseGet(JSONArray::new).toJSONString();
+      // return Optional.of(new JSONArray()).map(l -> { l.addAll(this); return l; }).orElseGet(JSONArray::new).toJSONString();
+      return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
     } catch (Exception e) {
       return super.toString();
     }
