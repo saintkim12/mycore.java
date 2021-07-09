@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 public class JSONMapTest {
 
   @Test
-  public void testJSONMapFrom() {
+  public void testJsonMapFrom() {
     // JSONMap m1 = new JSONMap();
     // m1.put("message", "hello");
     // assertTrue(String.format("m1: %s, m2: %s", m1, m2), true);
@@ -65,7 +65,7 @@ public class JSONMapTest {
     JSONMap m2 = JSONMap.tryParseJsonString(
         "{\"message\":\"hello3\",\"result\":true,\"primitiveList\":[1,2,5],\"list\":[{\"value\":\"a\"},{\"value\":\"b\"},{\"value\":\"C\"}]}");
     // log.debug("m2: {}", m2.get("list"));
-    Map<String, Object> javaMap = m2.castToJavaCollection();
+    Map<String, Object> javaMap = m2.castToJavaMap();
     // cast check for primitive type(boolean)
     assertEquals(javaMap.get("result"), true);
     // cast check for string
