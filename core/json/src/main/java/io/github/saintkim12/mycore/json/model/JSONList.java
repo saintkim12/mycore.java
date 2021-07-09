@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -42,18 +42,38 @@ public class JSONList extends LinkedList<JSONMap> {
   /* default method */
   public String toString() {
     try {
-      // return Optional.of(new JSONArray()).map(l -> { l.addAll(this); return l; }).orElseGet(JSONArray::new).toJSONString();
-      return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+      return ObjectMapperInstance.getInstance().writerWithDefaultPrettyPrinter().writeValueAsString(this);
     } catch (Exception e) {
       return super.toString();
     }
   }
 
   /* original method */
+  public List<Map<String, Object>> castToJavaCollection() {
+    List<Map<String, Object>> list = new LinkedList<>();
+    this.stream().forEach(e -> {
+      Map<String, Object> value = e.castToJavaCollection();
+      list.add(value);
+    });
+    return list;
+  }
 
   /* static method */
   public static JSONList from(Object object) {
     return CREATE_FROM_OBJECT.apply(object);
+  }
+
+  public static JSONList fromJsonString(String jsonString) throws JsonProcessingException {
+    return JSONList.from(ObjectMapperInstance.getInstance().readValue(jsonString, LinkedList.class));
+  }
+
+  public static JSONList tryParseJsonString(String jsonString) {
+    try {
+      return JSONList.from(ObjectMapperInstance.getInstance().readValue(jsonString, LinkedList.class));
+    } catch (JsonProcessingException e) {
+      // log.error("Parsing error with {}", jsonString, e);
+      return null;
+    }
   }
 
   /* builder */

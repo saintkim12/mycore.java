@@ -4,7 +4,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +25,7 @@ public class JSONMapTest {
     JSONMap m2 = JSONMap.builder().put("message", "hello2").build();
     JSONMap m3 = JSONMap.from(m2);
     assertEquals(String.format("m2: %s, m3: %s", m2, m3), m2.get("message"), m3.get("message"));
-    JSONMap m4 = JSONMap.fromJsonString("{\"message\":\"hello3\",\"result\":true}");
+    JSONMap m4 = JSONMap.tryParseJsonString("{\"message\":\"hello3\",\"result\":true}");
     assertEquals(m4.get("message"), "hello3");
   }
 
@@ -51,9 +50,9 @@ public class JSONMapTest {
 
   @Test
   public void testJSONMapCastGetList() {
-    JSONMap m2 = JSONMap.fromJsonString(
+    JSONMap m2 = JSONMap.tryParseJsonString(
         "{\"message\":\"hello3\",\"result\":true,\"primitiveList\":[1,2,5],\"list\":[{\"value\":\"a\"},{\"value\":\"b\"},{\"value\":\"C\"}]}");
-    log.debug("m2: {}", m2.get("list"));
+    // log.debug("m2: {}", m2.get("list"));
     assertEquals(m2.<List<Object>>castGet("primitiveList"), Arrays.asList(1, 2, 5));
     assertArrayEquals(m2.<JSONList>castGet("list").toArray(),
         Arrays.asList(JSONMap.of("value", "a"), JSONMap.of("value", "b"), JSONMap.of("value", "C")).toArray());
@@ -63,8 +62,19 @@ public class JSONMapTest {
 
   @Test
   public void testJSONMapCastJavaCollection() {
-    Map<String, Object> javaMap = new HashMap<>();
-    // javaMap.put("message")
+    JSONMap m2 = JSONMap.tryParseJsonString(
+        "{\"message\":\"hello3\",\"result\":true,\"primitiveList\":[1,2,5],\"list\":[{\"value\":\"a\"},{\"value\":\"b\"},{\"value\":\"C\"}]}");
+    // log.debug("m2: {}", m2.get("list"));
+    Map<String, Object> javaMap = m2.castToJavaCollection();
+    // cast check for primitive type(boolean)
+    assertEquals(javaMap.get("result"), true);
+    // cast check for string
+    assertEquals(javaMap.get("message"), "hello3");
+    // cast check for primitive list
+    assertArrayEquals(((List<Object>) javaMap.get("primitiveList")).toArray(), Arrays.asList(1, 2, 5).toArray());
+    // cast check for JSONMap list
+    assertArrayEquals(((List<Map<String, Object>>) javaMap.get("list")).toArray(),
+        Arrays.asList(JSONMap.of("value", "a"), JSONMap.of("value", "b"), JSONMap.of("value", "C")).toArray());
   }
 
 }

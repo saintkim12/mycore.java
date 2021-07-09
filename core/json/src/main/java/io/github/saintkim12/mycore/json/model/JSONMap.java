@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -81,7 +80,7 @@ public class JSONMap extends LinkedHashMap<String, Object> {
   /* default method */
   public String toString() {
     try {
-      return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+      return ObjectMapperInstance.getInstance().writerWithDefaultPrettyPrinter().writeValueAsString(this);
     } catch (Exception e) {
       return super.toString();
     }
@@ -113,6 +112,19 @@ public class JSONMap extends LinkedHashMap<String, Object> {
     return (T) value;
   }
 
+  public Map<String, Object> castToJavaCollection() {
+    Map<String, Object> map = new LinkedHashMap<>();
+    this.entrySet().stream().forEach(e -> {
+      Object value = Optional.ofNullable(e.getValue()).map(o -> {
+        if (o instanceof JSONMap) return ((JSONMap) o).castToJavaCollection();
+        else if (o instanceof JSONList) return ((JSONList) o).castToJavaCollection();
+        else return o;
+      }).orElse(e.getValue());
+      map.put(e.getKey(), value);
+    });
+    return map;
+  }
+
   /**
    * castGetExceptsNull()
    * 설명   : (map).get 사용 시 type cast 과정 생략을 위한 메소드
@@ -131,14 +143,16 @@ public class JSONMap extends LinkedHashMap<String, Object> {
     return resultMap;
   }
 
-  public static JSONMap fromJsonString(String jsonString) {
+  public static JSONMap fromJsonString(String jsonString) throws JsonProcessingException {
+    return JSONMap.from(ObjectMapperInstance.getInstance().readValue(jsonString, LinkedHashMap.class));
+  }
+
+  public static JSONMap tryParseJsonString(String jsonString) {
     try {
-      // return new ObjectMapper().readValue(jsonString, JSONMap.class);
-      return JSONMap.from(new ObjectMapper().readValue(jsonString, LinkedHashMap.class));
-      // return JSONMap.from(new JSONParser().parse(jsonString));
+      return JSONMap.from(ObjectMapperInstance.getInstance().readValue(jsonString, LinkedHashMap.class));
     } catch (JsonProcessingException e) {
-      log.error("Parsing error with {}", jsonString, e);
-      return new JSONMap();
+      // log.error("Parsing error with {}", jsonString, e);
+      return null;
     }
   }
 
