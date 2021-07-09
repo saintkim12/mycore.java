@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,28 +29,30 @@ import lombok.extern.slf4j.Slf4j;
 @EqualsAndHashCode(callSuper = false)
 public class JSONMap extends LinkedHashMap<String, Object> {
   /* member, inner methods */
+  @SuppressWarnings("unchecked")
+  private final static Function<Entry<?, ?>, Entry<?, ?>> DETECT_AND_REWRAP_ENTRY = e -> {
+    if (e.getValue() instanceof List) {
+      Optional<List<Object>> optList = Optional.of((List<Object>) e.getValue());
+      Integer listSize = Long.valueOf(optList.map(List::stream).orElseGet(Stream::empty).count()).intValue();
+      Integer mappableCount = Long
+          .valueOf(optList.map(List::stream).orElseGet(Stream::empty).filter(item -> item instanceof Map).count())
+          .intValue();
+      return listSize > 0 && listSize.equals(mappableCount)
+          ? new SimpleEntry<Object, Object>(e.getKey(), JSONList.from(e.getValue()))
+          : new SimpleEntry<Object, Object>(e.getKey(), optList.map(List::stream).orElseGet(Stream::empty).map(item -> item instanceof Map ? JSONMap.from(item) : item).collect(Collectors.toList()));
+    } else {
+      return e;
+    }
+  };
   private final static BiConsumer<Object, Consumer<Entry<?, ?>>> COLLECT_FROM_OBJECT = (object, fn) -> {
     Optional.ofNullable(object).filter(o -> o instanceof Map).map(o -> (Map<?, ?>) o).map(Map::entrySet)
-        .map(Set::stream).orElseGet(Stream::empty).map(e -> {
-          return e.getValue() instanceof List ? new SimpleEntry<Object, Object>(e.getKey(), JSONList.from(e.getValue())) : e;
-        }).forEach(e -> {
-          Object key = e.getKey();
-          if (key != null) {
-            fn.accept(e);
-          }
-        });
+        .map(Set::stream).orElseGet(Stream::empty).filter(e -> e.getKey() != null).map(DETECT_AND_REWRAP_ENTRY)
+        .forEach(fn);
   };
   private final static BiConsumer<Collection<Entry<String, Object>>, Consumer<Entry<?, ?>>> COLLECT_FROM_ENTRY_COLLECTION = (
       collection, fn) -> {
     Optional.ofNullable(collection).map(Collection::stream).orElseGet(Stream::empty).filter(o -> o instanceof Entry)
-        .map(o -> (Entry<?, ?>) o).map(e -> {
-          return e.getValue() instanceof List ? new SimpleEntry<Object, Object>(e.getKey(), JSONList.from(e.getValue())) : e;
-        }).forEach(e -> {
-          Object key = e.getKey();
-          if (key != null) {
-            fn.accept(e);
-          }
-        });
+        .map(o -> (Entry<?, ?>) o).filter(e -> e.getKey() != null).map(DETECT_AND_REWRAP_ENTRY).forEach(fn);
   };
   private final static Function<Object, Stream<Entry<String, Object>>> STREAM_FROM_OBJECT = (object) -> {
     LinkedHashSet<Entry<String, Object>> resultSet = new LinkedHashSet<>();
@@ -109,10 +112,6 @@ public class JSONMap extends LinkedHashMap<String, Object> {
     Object value = this.getOrDefault(key, defaultValue);
     return (T) value;
   }
-  // public JSONList castGetJsonList(Object key) {
-  //   this.get(key)
-  //   return (T) value;
-  // }
 
   /**
    * castGetExceptsNull()

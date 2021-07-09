@@ -17,12 +17,12 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = false)
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class JSONList extends LinkedList<Object> {
+public class JSONList extends LinkedList<JSONMap> {
 
   /* member, inner methods */
-  private final static Function<Object, Stream<Object>> STREAM_FROM_OBJECT = (object) -> {
+  private final static Function<Object, Stream<JSONMap>> STREAM_FROM_OBJECT = (object) -> {
     return Optional.ofNullable(object).filter(o -> o instanceof List).map(l -> (List<?>) l).map(List::stream)
-        .orElseGet(Stream::empty).map(o -> (Object)(o instanceof Map ? JSONMap.from(o) : o));
+        .orElseGet(Stream::empty).filter(o -> o instanceof Map).map(JSONMap::from);
   };
 
   private final static Function<Object, JSONList> CREATE_FROM_OBJECT = (object) -> {
@@ -31,12 +31,12 @@ public class JSONList extends LinkedList<Object> {
 
   /* constructor */
   public <T extends Map<String, Object>> JSONList(List<T> l) {
-    l.stream().map(o -> (Object)(o instanceof Map ? JSONMap.from(o) : o)).forEach(this::add);
+    l.stream().map(JSONMap::from).forEach(this::add);
   }
 
   public JSONList(Object object) {
     Optional.ofNullable(object).filter(o -> o instanceof List).map(l -> (List<?>) l).map(List::stream)
-        .orElseGet(Stream::empty).map(o -> (Object)(o instanceof Map ? JSONMap.from(o) : o)).forEach(this::add);
+        .orElseGet(Stream::empty).map(JSONMap::from).forEach(this::add);
   }
 
   /* default method */
@@ -62,7 +62,7 @@ public class JSONList extends LinkedList<Object> {
   }
 
   public static class JSONListBuilder {
-    private LinkedList<Object> _stack = new LinkedList<>();
+    private LinkedList<JSONMap> _stack = new LinkedList<>();
 
     /* aliases */
     public <T extends Map<String, Object>> JSONListBuilder from(List<T> o) {
@@ -80,13 +80,13 @@ public class JSONList extends LinkedList<Object> {
     }
 
     public JSONListBuilder add(Map<String, Object> map) {
-      _stack.add(map);
+      _stack.add(JSONMap.from(map));
       return this;
     }
 
     /* build method */
     public JSONList build() {
-      return _stack.stream().map(o -> (Object)(o instanceof Map ? JSONMap.from(o) : o)).collect(Collectors.toCollection(JSONList::new));
+      return _stack.stream().collect(Collectors.toCollection(JSONList::new));
     }
   }
 }

@@ -4,6 +4,9 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -49,12 +52,19 @@ public class JSONMapTest {
   @Test
   public void testJSONMapCastGetList() {
     JSONMap m2 = JSONMap.fromJsonString(
-        "{\"message\":\"hello3\",\"result\":true,\"list\":[{\"value\":\"a\"},{\"value\":\"b\"},{\"value\":\"C\"}]}");
+        "{\"message\":\"hello3\",\"result\":true,\"primitiveList\":[1,2,5],\"list\":[{\"value\":\"a\"},{\"value\":\"b\"},{\"value\":\"C\"}]}");
     log.debug("m2: {}", m2.get("list"));
+    assertEquals(m2.<List<Object>>castGet("primitiveList"), Arrays.asList(1, 2, 5));
     assertArrayEquals(m2.<JSONList>castGet("list").toArray(),
         Arrays.asList(JSONMap.of("value", "a"), JSONMap.of("value", "b"), JSONMap.of("value", "C")).toArray());
     assertEquals(m2.<JSONList>castGet("list").toString(), JSONList
         .from(Arrays.asList(JSONMap.of("value", "a"), JSONMap.of("value", "b"), JSONMap.of("value", "C"))).toString());
+  }
+
+  @Test
+  public void testJSONMapCastJavaCollection() {
+    Map<String, Object> javaMap = new HashMap<>();
+    // javaMap.put("message")
   }
 
 }
