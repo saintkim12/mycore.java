@@ -1,5 +1,7 @@
 package io.github.saintkim12.mycore.json.model;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -130,6 +132,153 @@ public class JSONMap extends LinkedHashMap<String, Object> {
   public <T> T tryCastGetExceptsNull(Object key, T defaultValue) {
     Optional<T> optValue = Optional.ofNullable(this.tryCastGet(key));
     return optValue.orElse(defaultValue);
+  }
+
+  /**
+   * map의 값을 string으로 변환하여 가져오는 메소드
+   * <p>
+   * 타입 캐스팅 실패 시 에러 발생
+   * @param key
+   * @return casted value
+   * @throws ClassCastException
+   */
+  public String castGetAsString(Object key) {
+    return castGetAsString(key, null);
+  }
+
+  /**
+   * map의 값을 string으로 변환하여 가져오는 메소드
+   * <p>
+   * 타입 캐스팅 실패 시 에러 발생
+   * @param key
+   * @param defaultValue 해당 key의 값이 없는 경우 리턴할 기본값
+   * @return casted value or default value
+   * @throws ClassCastException
+   */
+  public String castGetAsString(Object key, String defaultValue) {
+    return Optional.ofNullable(this.<Object>castGet(key)).map(Object::toString).orElse(defaultValue);
+  }
+
+  /**
+   * map의 값을 string으로 변환하여 가져오는 메소드
+   * <p>
+   * 타입 캐스팅 실패 시 null 리턴
+   * @param key
+   * @return casted value
+   * @throws ClassCastException
+   */
+  public String tryCastGetAsString(Object key) {
+    return tryCastGetAsString(key, null);
+  }
+
+  /**
+   * map의 값을 string으로 변환하여 가져오는 메소드
+   * <p>
+   * 타입 캐스팅 실패 시, 해당 key의 값이 null이거나 값이 없는 경우 defaultValue 리턴
+   * @param key
+   * @param defaultValue 해당 key의 값이 없는 경우 리턴할 기본값
+   * @return casted value or default value
+   * @throws ClassCastException
+   */
+  public String tryCastGetAsString(Object key, String defaultValue) {
+    try {
+      String value = castGetAsString(key);
+      return Optional.ofNullable(value).orElse(defaultValue);
+    } catch (ClassCastException e) {
+      return defaultValue;
+    }
+  }
+
+  /**
+   * map의 값을 Number 기반 클래스로 변환하여 가져오는 메소드
+   * <p>
+   * 클래스 처리를 위해 Number로부터 파생된 클래스를 넘겨주어야 함
+   * <p>
+   * 타입 캐스팅 실패 시 에러 발생
+   * @param key
+   * @param _class 전달받을 클래스(ex> Double.class)
+   * @return casted value
+   * @throws NumberFormatException
+   * @throws ClassCastException
+   */
+  public <N extends Number> N castGetAsNumber(Object key, Class<N> _class) {
+    return castGetAsNumber(key, null, _class);
+  }
+
+  /**
+   * map의 값을 Number 기반 클래스로 변환하여 가져오는 메소드
+   * <p>
+   * 클래스 처리를 위해 Number로부터 파생된 클래스를 넘겨주어야 함
+   * <p>
+   * 타입 캐스팅 실패 시 에러 발생
+   * @param key
+   * @param defaultValue 해당 key의 값이 없는 경우 리턴할 기본값
+   * @param _class 전달받을 클래스(ex> Double.class)
+   * @return casted value
+   * @throws NumberFormatException
+   * @throws ClassCastException
+   */
+  public <N extends Number> N castGetAsNumber(Object key, N defaultValue, Class<N> _class) {
+    // 정확한 값을 위해 BigDecimal 이용
+    BigDecimal _number = Optional.ofNullable(this.castGetAsString(key)).map(BigDecimal::new).orElse(null);
+    if (_number == null) {
+      return defaultValue;
+    } else if ("java.lang.Integer".equals(_class.getCanonicalName())) {
+      return _class.cast(Integer.valueOf(_number.intValue()));
+    } else if ("java.lang.Long".equals(_class.getCanonicalName())) {
+      return _class.cast(Long.valueOf(_number.longValue()));
+    } else if ("java.lang.Double".equals(_class.getCanonicalName())) {
+      return _class.cast(Double.valueOf(_number.doubleValue()));
+    } else if ("java.lang.Float".equals(_class.getCanonicalName())) {
+      return _class.cast(Float.valueOf(_number.floatValue()));
+    } else if ("java.lang.Byte".equals(_class.getCanonicalName())) {
+      return _class.cast(Byte.valueOf(_number.byteValue()));
+    } else if ("java.lang.Short".equals(_class.getCanonicalName())) {
+      return _class.cast(Short.valueOf(_number.shortValue()));
+    } else if ("java.lang.Number".equals(_class.getCanonicalName())) {
+      return _class.cast(Double.valueOf(_number.doubleValue()));
+    } else if ("java.math.BigDecimal".equals(_class.getCanonicalName())) {
+      return _class.cast(BigDecimal.valueOf(_number.doubleValue()));
+    } else if ("java.math.BigInteger".equals(_class.getCanonicalName())) {
+      return _class.cast(BigInteger.valueOf(_number.longValue()));
+    } else {
+      // It will be error(ClassCastException)!
+      return _class.cast(_number);
+    }
+  }
+
+  /**
+   * map의 값을 Number 기반 클래스로 변환하여 가져오는 메소드
+   * <p>
+   * 클래스 처리를 위해 Number로부터 파생된 클래스를 넘겨주어야 함
+   * <p>
+   * 타입 캐스팅 실패 시 null 리턴
+   * @param key
+   * @param _class 전달받을 클래스(ex> Double.class)
+   * @return casted value
+   */
+  public <N extends Number> N tryCastGetAsNumber(Object key, Class<N> _class) {
+    return tryCastGetAsNumber(key, null, _class);
+  }
+
+  /**
+   * map의 값을 Number 기반 클래스로 변환하여 가져오는 메소드
+   * <p>
+   * 클래스 처리를 위해 Number로부터 파생된 클래스를 넘겨주어야 함
+   * <p>
+   * 타입 캐스팅 실패 시, 해당 key의 값이 null이거나 값이 없는 경우 defaultValue 리턴
+   * @param key
+   * @param defaultValue 해당 key의 값이 없는 경우 리턴할 기본값
+   * @param _class 전달받을 클래스(ex> Double.class)
+   * @return casted value
+   */
+  public <N extends Number> N tryCastGetAsNumber(Object key, N defaultValue, Class<N> _class) {
+    try {
+      N value = castGetAsNumber(key, _class);
+      return Optional.ofNullable(value).orElse(defaultValue);
+    } catch (NumberFormatException | ClassCastException e) {
+      return defaultValue;
+    }
   }
 
   /**

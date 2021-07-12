@@ -47,6 +47,8 @@ class ObjectInstance {
           ? new SimpleEntry<Object, Object>(e.getKey(), JSONList.from(e.getValue()))
           : new SimpleEntry<Object, Object>(e.getKey(), optList.map(List::stream).orElseGet(Stream::empty)
               .map(item -> item instanceof Map ? JSONMap.from(item) : item).collect(Collectors.toList()));
+    } else if (e.getValue() instanceof Map) {
+      return new SimpleEntry<Object, Object>(e.getKey(), Optional.of(e.getValue()).map(JSONMap::from).orElseGet(JSONMap::new));
     } else {
       return e;
     }
