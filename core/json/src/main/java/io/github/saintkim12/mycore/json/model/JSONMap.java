@@ -1,7 +1,5 @@
 package io.github.saintkim12.mycore.json.model;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -195,7 +193,7 @@ public class JSONMap extends LinkedHashMap<String, Object> {
    * <p>
    * 클래스 처리를 위해 Number로부터 파생된 클래스를 넘겨주어야 함
    * <p>
-   * 타입 캐스팅 실패 시 에러 발생
+   * 변환 실패 또는 타입 캐스팅 실패 시 에러 발생
    * @param key
    * @param _class 전달받을 클래스(ex> Double.class)
    * @return casted value
@@ -211,7 +209,7 @@ public class JSONMap extends LinkedHashMap<String, Object> {
    * <p>
    * 클래스 처리를 위해 Number로부터 파생된 클래스를 넘겨주어야 함
    * <p>
-   * 타입 캐스팅 실패 시 에러 발생
+   * 변환 실패 또는 타입 캐스팅 실패 시 에러 발생
    * @see NumberHelper#parse
    * @param key
    * @param defaultValue 해당 key의 값이 없는 경우 리턴할 기본값
@@ -245,7 +243,7 @@ public class JSONMap extends LinkedHashMap<String, Object> {
    * <p>
    * 클래스 처리를 위해 Number로부터 파생된 클래스를 넘겨주어야 함
    * <p>
-   * 타입 캐스팅 실패 시, 해당 key의 값이 null이거나 값이 없는 경우 defaultValue 리턴
+   * 변환 실패 또는 타입 캐스팅 실패 시, 해당 key의 값이 null이거나 값이 없는 경우 defaultValue 리턴
    * @param key
    * @param defaultValue 해당 key의 값이 없는 경우 리턴할 기본값
    * @param _class 전달받을 클래스(ex> Double.class)
