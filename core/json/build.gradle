@@ -16,6 +16,10 @@ buildscript {
   }
 }
 
+plugins {
+  id 'maven-publish'
+}
+
 // plugins {
   // Apply the java-library plugin for API and implementation separation.
 apply plugin: 'java'
@@ -64,3 +68,35 @@ dependencies {
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+
+
+
+// pluginManagement {
+//   repositories {
+//   }
+// }
+repositories {
+  mavenCentral()
+  maven { url "https://raw.github.com/synergian/wagon-git/releases"}
+}
+
+configurations {
+  deployerJar
+}
+
+dependencies {
+  deployerJar "ar.com.synergian:wagon-git:0.2.3"
+}
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      groupId = 'org.gradle.sample'
+      artifactId = 'library'
+      version = '1.1'
+
+      from components.java
+    }
+  }
+}

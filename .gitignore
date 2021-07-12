@@ -11,5 +11,7 @@ bin
 .project
 .springBeans
 .settings
+# git clone --single-branch -b releases https://github.com/saintkim12/mycore.java.git .releases
+.releases
 
 .vscode

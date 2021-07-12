@@ -1,0 +1,29 @@
+buildscript {
+  repositories {
+    mavenCentral()
+    maven { url "https://plugins.gradle.org/m2/" }
+  }
+  dependencies {
+    classpath "io.franzbecker:gradle-lombok:3.0.0"
+  }
+}
+
+// inherit plugins: https://stackoverflow.com/a/43814175
+plugins {
+  id "io.franzbecker.gradle-lombok" version '3.0.0' apply false
+}
+
+subprojects.findAll {
+  it.path ==~ /^:core:(.*?)$/
+}.each { p ->
+  configure(p) {
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+    apply plugin: "io.franzbecker.gradle-lombok"
+
+    apply from: "${project.rootDir}/deploy.gradle"
+
+    group = GROUP
+  }
+}
