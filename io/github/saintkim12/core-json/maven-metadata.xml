@@ -3,10 +3,11 @@
   <groupId>io.github.saintkim12</groupId>
   <artifactId>core-json</artifactId>
   <versioning>
-    <release>0.1.0</release>
+    <release>0.1.0-TEST</release>
     <versions>
       <version>0.1.0</version>
+      <version>0.1.0-TEST</version>
     </versions>
-    <lastUpdated>20210712011816</lastUpdated>
+    <lastUpdated>20210712013227</lastUpdated>
   </versioning>
 </metadata>
