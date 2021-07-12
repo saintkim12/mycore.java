@@ -10,3 +10,4 @@
 rootProject.name = 'mycore.java'
 include ':lib'
 include ':core:json'
+include ':core:number'

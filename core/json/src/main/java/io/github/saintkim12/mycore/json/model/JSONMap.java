@@ -11,6 +11,7 @@ import java.util.Optional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.saintkim12.mycore.number.helper.NumberHelper;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -211,6 +212,7 @@ public class JSONMap extends LinkedHashMap<String, Object> {
    * 클래스 처리를 위해 Number로부터 파생된 클래스를 넘겨주어야 함
    * <p>
    * 타입 캐스팅 실패 시 에러 발생
+   * @see NumberHelper#parse
    * @param key
    * @param defaultValue 해당 key의 값이 없는 경우 리턴할 기본값
    * @param _class 전달받을 클래스(ex> Double.class)
@@ -219,32 +221,9 @@ public class JSONMap extends LinkedHashMap<String, Object> {
    * @throws ClassCastException
    */
   public <N extends Number> N castGetAsNumber(Object key, N defaultValue, Class<N> _class) {
-    // 정확한 값을 위해 BigDecimal 이용
-    BigDecimal _number = Optional.ofNullable(this.castGetAsString(key)).map(BigDecimal::new).orElse(null);
-    if (_number == null) {
-      return defaultValue;
-    } else if ("java.lang.Integer".equals(_class.getCanonicalName())) {
-      return _class.cast(Integer.valueOf(_number.intValue()));
-    } else if ("java.lang.Long".equals(_class.getCanonicalName())) {
-      return _class.cast(Long.valueOf(_number.longValue()));
-    } else if ("java.lang.Double".equals(_class.getCanonicalName())) {
-      return _class.cast(Double.valueOf(_number.doubleValue()));
-    } else if ("java.lang.Float".equals(_class.getCanonicalName())) {
-      return _class.cast(Float.valueOf(_number.floatValue()));
-    } else if ("java.lang.Byte".equals(_class.getCanonicalName())) {
-      return _class.cast(Byte.valueOf(_number.byteValue()));
-    } else if ("java.lang.Short".equals(_class.getCanonicalName())) {
-      return _class.cast(Short.valueOf(_number.shortValue()));
-    } else if ("java.lang.Number".equals(_class.getCanonicalName())) {
-      return _class.cast(Double.valueOf(_number.doubleValue()));
-    } else if ("java.math.BigDecimal".equals(_class.getCanonicalName())) {
-      return _class.cast(BigDecimal.valueOf(_number.doubleValue()));
-    } else if ("java.math.BigInteger".equals(_class.getCanonicalName())) {
-      return _class.cast(BigInteger.valueOf(_number.longValue()));
-    } else {
-      // It will be error(ClassCastException)!
-      return _class.cast(_number);
-    }
+    return Optional.ofNullable(this.castGetAsString(key))
+      .map(object -> NumberHelper.getInstance().parse(object, defaultValue, _class))
+      .orElse(defaultValue);
   }
 
   /**

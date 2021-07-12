@@ -13,6 +13,34 @@ plugins {
   id "io.franzbecker.gradle-lombok" version '3.0.0' apply false
 }
 
+// subprojects.findAll {
+//   it.name in ['lib']
+// }.each { p ->
+//   configure(p) {
+//     apply plugin: 'java'
+//     apply plugin: 'eclipse'
+//     apply plugin: 'idea'
+//     apply plugin: 'java-library'
+    
+//     // apply from: "${project.rootDir}/deploy.gradle"
+
+//     dependencies {
+//       // Use JUnit test framework.
+//       testImplementation 'junit:junit:4.13.1'
+
+//       // This dependency is exported to consumers, that is to say found on their compile classpath.
+//       api 'org.apache.commons:commons-math3:3.6.1'
+
+//       // This dependency is used internally, and not exposed to consumers on their own compile classpath.
+//       implementation 'com.google.guava:guava:30.0-jre'
+//     }
+
+//     group = GROUP
+//     sourceCompatibility = 1.8
+//     targetCompatibility = 1.8
+//   }
+// }
+
 subprojects.findAll {
   it.path ==~ /^:core:(.*?)$/
 }.each { p ->
@@ -20,10 +48,41 @@ subprojects.findAll {
     apply plugin: 'java'
     apply plugin: 'eclipse'
     apply plugin: 'idea'
+    apply plugin: 'java-library'
     apply plugin: "io.franzbecker.gradle-lombok"
+    
+    configurations {
+      developmentOnly
+      runtimeClasspath {
+        extendsFrom developmentOnly
+      }
+      compileOnly {
+        extendsFrom annotationProcessor
+      }
+    }
+    
+    dependencies {
+      /* lombok */
+      compileOnly 'org.projectlombok:lombok'
+      annotationProcessor 'org.projectlombok:lombok'
+
+      // Use JUnit test framework.
+      testImplementation 'junit:junit:4.13.1'
+
+      // This dependency is exported to consumers, that is to say found on their compile classpath.
+      api 'org.apache.commons:commons-math3:3.6.1'
+
+      // This dependency is used internally, and not exposed to consumers on their own compile classpath.
+      implementation 'com.google.guava:guava:30.0-jre'
+
+      // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+      implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.31'
+    }
 
     apply from: "${project.rootDir}/deploy.gradle"
 
     group = GROUP
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
   }
 }
