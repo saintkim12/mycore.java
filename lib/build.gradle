@@ -1,4 +1,4 @@
-// dependencies {
-//   implementation project(':core:number')
-//   implementation project(':core:json')
-// }
+dependencies {
+  api project(':core:number')
+  api project(':core:json')
+}
